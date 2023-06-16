@@ -11,8 +11,23 @@ const pool = new Pool({
 //pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.log(response)})
 
 
-const properties = require("./json/properties.json");
-const users = require("./json/users.json");
+const properties = `
+SELECT *
+FROM properties
+LIMIT $1;
+`;
+
+const users = `
+SELECT *
+FROM users
+WHERE email = $1;
+`;
+
+const ids = `
+SELECT *
+FROM users
+WHERE id = $1;
+`;
 
 /// Users
 
@@ -24,31 +39,15 @@ const users = require("./json/users.json");
 const getUserWithEmail = function (email) {
 
   return pool
-    .query(`
-      SELECT *
-      FROM users
-      WHERE email = $1;
-      `,
-      [ email ])
+    .query(users, [ email ])
     .then((result) => {
-      //console.log('getUserWithEmail', result.rows);
-      return result.rows;
+      console.log('getUserWithEmail', result.rows[0]);
+      return result.rows[0];
     })
     .catch((err) => {
       console.log(err.message);
     });
-
-
-/*   let resolvedUser = null;
-  for (const userId in users) {
-    const user = users[userId];
-    if (user?.email.toLowerCase() === email?.toLowerCase()) {
-      resolvedUser = user;
-    }
-  }
-  return Promise.resolve(resolvedUser); */
 };
-
 
 /**
  * Get a single user from the database given their id.
@@ -58,21 +57,14 @@ const getUserWithEmail = function (email) {
 const getUserWithId = function (id) {
 
   return pool
-    .query(`
-      SELECT *
-      FROM users
-      WHERE id = $1;
-      `,
-      [ id ])
+    .query(ids, [ id ])
     .then((result) => {
       //console.log('getUserWithId', result.rows);
       return result.rows;
     })
     .catch((err) => {
       console.log(err.message);
-    });
-
-  //return Promise.resolve(users[id]);
+    })
 };
 
 /**
@@ -80,7 +72,9 @@ const getUserWithId = function (id) {
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser = function (name, email, password) {
+const addUser = function (user) {
+
+  console.log("INPUT: ", user)
 
   return pool
     .query(`
@@ -88,7 +82,7 @@ const addUser = function (name, email, password) {
       VALUES ($1, $2, $3)
       RETURNING *;
       `,
-      [ name, email, password ])
+      [ user.name, user.email, user.password ])
     .then((result) => {
       console.log('addUser: ', result.rows);
       return result.rows;
@@ -98,9 +92,6 @@ const addUser = function (name, email, password) {
     });
 };
 
-console.log(addUser('Add User 2', 'email2@mailemail.com', '$2a$10$FB/BOAVhpuLvpOREQVmvmezD4ED/.JBIDRh70tGevYzYzQgFId2u.'));
-
-
 /// Reservations
 
 /**
@@ -109,7 +100,9 @@ console.log(addUser('Add User 2', 'email2@mailemail.com', '$2a$10$FB/BOAVhpuLvpO
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function (guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+
+
+  //return getAllProperties(null, 2);
 };
 
 /// Properties
@@ -124,12 +117,7 @@ const getAllReservations = function (guest_id, limit = 10) {
 const getAllProperties = (options, limit = 10) => {
   
   return pool
-    .query(`
-      SELECT *
-      FROM properties
-      LIMIT $1;
-      `,
-      [ limit ])
+    .query(properties, [ limit ])
     .then((result) => {
       //console.log('getAllProperties', result.rows);
       return result.rows;
@@ -138,14 +126,6 @@ const getAllProperties = (options, limit = 10) => {
       console.log(err.message);
     });
 };
-
-/* const getAllProperties = function (options, limit = 10) {
-  const limitedProperties = {};
-  for (let i = 1; i <= limit; i++) {
-    limitedProperties[i] = properties[i];
-  }
-  return Promise.resolve(limitedProperties);
-}; */
 
 /**
  * Add a property to the database
