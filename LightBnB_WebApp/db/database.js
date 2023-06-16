@@ -10,7 +10,6 @@ const pool = new Pool({
 // the following assumes that you named your connection variable `pool`
 //pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.log(response)})
 
-
 const properties = `
 SELECT *
 FROM properties
@@ -27,6 +26,14 @@ const ids = `
 SELECT *
 FROM users
 WHERE id = $1;
+`;
+
+const reservations = `
+SELECT *
+FROM reservations
+JOIN properties ON reservations.property_id = properties.id
+WHERE reservations.guest_id = $1
+LIMIT $2;
 `;
 
 /// Users
@@ -74,7 +81,7 @@ const getUserWithId = function (id) {
  */
 const addUser = function (user) {
 
-  console.log("INPUT: ", user)
+  //console.log("INPUT: ", user)
 
   return pool
     .query(`
@@ -101,6 +108,15 @@ const addUser = function (user) {
  */
 const getAllReservations = function (guest_id, limit = 10) {
 
+  return pool
+    .query(reservations, [ guest_id, limit ])
+      .then((result) => {
+        console.log('getAllReservations: ', result.rows);
+        return result.rows;
+      })
+      .catch((err) => {
+        console.log('ERROR: ', err.message);
+      })
 
   //return getAllProperties(null, 2);
 };
