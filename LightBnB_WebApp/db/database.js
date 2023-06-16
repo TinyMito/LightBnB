@@ -31,8 +31,7 @@ const getUserWithEmail = function (email) {
       `,
       [ email ])
     .then((result) => {
-      //console.log('getUserWithEmail');
-      //console.log(result.rows);
+      console.log('getUserWithEmail', result.rows);
       return result.rows;
     })
     .catch((err) => {
@@ -57,8 +56,26 @@ const getUserWithEmail = function (email) {
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function (id) {
-  return Promise.resolve(users[id]);
+
+  return pool
+    .query(`
+      SELECT *
+      FROM users
+      WHERE id = $1;
+      `,
+      [ id ])
+    .then((result) => {
+      console.log('getUserWithId', result.rows);
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+
+  //return Promise.resolve(users[id]);
 };
+
+console.log(getUserWithId('6'));
 
 /**
  * Add a new user to the database.
@@ -102,8 +119,7 @@ const getAllProperties = (options, limit = 10) => {
       `,
       [ limit ])
     .then((result) => {
-      //console.log(result.rows);
-      console.log('getAllProperties');
+      console.log('getAllProperties', result.rows);
       return result.rows;
     })
     .catch((err) => {
