@@ -31,7 +31,7 @@ const getUserWithEmail = function (email) {
       `,
       [ email ])
     .then((result) => {
-      console.log('getUserWithEmail', result.rows);
+      //console.log('getUserWithEmail', result.rows);
       return result.rows;
     })
     .catch((err) => {
@@ -65,7 +65,7 @@ const getUserWithId = function (id) {
       `,
       [ id ])
     .then((result) => {
-      console.log('getUserWithId', result.rows);
+      //console.log('getUserWithId', result.rows);
       return result.rows;
     })
     .catch((err) => {
@@ -75,19 +75,31 @@ const getUserWithId = function (id) {
   //return Promise.resolve(users[id]);
 };
 
-console.log(getUserWithId('6'));
-
 /**
  * Add a new user to the database.
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser = function (user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
+const addUser = function (name, email, password) {
+
+  return pool
+    .query(`
+      INSERT INTO users (name, email, password)
+      VALUES ($1, $2, $3)
+      RETURNING *;
+      `,
+      [ name, email, password ])
+    .then((result) => {
+      console.log('addUser: ', result.rows);
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log('ERROR: ', err.message);
+    });
 };
+
+console.log(addUser('Add User 2', 'email2@mailemail.com', '$2a$10$FB/BOAVhpuLvpOREQVmvmezD4ED/.JBIDRh70tGevYzYzQgFId2u.'));
+
 
 /// Reservations
 
@@ -119,7 +131,7 @@ const getAllProperties = (options, limit = 10) => {
       `,
       [ limit ])
     .then((result) => {
-      console.log('getAllProperties', result.rows);
+      //console.log('getAllProperties', result.rows);
       return result.rows;
     })
     .catch((err) => {
