@@ -149,11 +149,13 @@ const getAllProperties = (options, limit = 10) => {
   }
   if (options.minimum_rating) {
     queryParams.push(`${options.minimum_rating}`);
-    if (options.maximum_price_per_night) {
+    if (options.city || options.minimum_price_per_night || options.maximum_price_per_night) {
       propertyQuery += `AND `;
     }
     propertyQuery += `property_reviews.rating >= $${queryParams.length} `;
   }
+
+  console.log(propertyQuery, queryParams)
 
   // Query closure
   queryParams.push(limit);
