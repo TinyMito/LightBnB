@@ -93,7 +93,6 @@ const getAllReservations = function(id, limit = 10) {
   return pool
     .query(reservationQuery, [ id, limit ])
     .then((result) => {
-      console.log(result.rows)
       return result.rows;
     })
     .catch((err) => {
