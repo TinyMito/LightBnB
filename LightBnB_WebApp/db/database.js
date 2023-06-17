@@ -155,8 +155,6 @@ const getAllProperties = (options, limit = 10) => {
     propertyQuery += `property_reviews.rating >= $${queryParams.length} `;
   }
 
-  console.log(propertyQuery, queryParams);
-
   // Query closure
   queryParams.push(limit);
   propertyQuery += `
