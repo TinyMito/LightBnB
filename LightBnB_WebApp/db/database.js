@@ -155,7 +155,7 @@ const getAllProperties = (options, limit = 10) => {
     propertyQuery += `property_reviews.rating >= $${queryParams.length} `;
   }
 
-  console.log(propertyQuery, queryParams)
+  console.log(propertyQuery, queryParams);
 
   // Query closure
   queryParams.push(limit);
@@ -166,7 +166,7 @@ const getAllProperties = (options, limit = 10) => {
   `;
 
   // Execute the query with paramenters
-  return queryData(propertyQuery, queryParams)
+  return queryData(propertyQuery, queryParams);
 };
 
 /**
@@ -180,7 +180,7 @@ const addProperty = function(property) {
   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
   RETURNING *;
   `;
-  return queryData(addPropertyQuery, [property.title, property.description, property.number_of_bedrooms, property.number_of_bathrooms, property.parking_spaces, property.cost_per_night, property.thumbnail_photo_url, property.cover_photo_url, property.street, property.country, property.city, property.province, property.post_code, property.owner_id])
+  return queryData(addPropertyQuery, [property.title, property.description, property.number_of_bedrooms, property.number_of_bathrooms, property.parking_spaces, property.cost_per_night, property.thumbnail_photo_url, property.cover_photo_url, property.street, property.country, property.city, property.province, property.post_code, property.owner_id]);
 };
 
 module.exports = {
