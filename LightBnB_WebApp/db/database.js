@@ -122,8 +122,6 @@ const getAllReservations = function(id, limit = 10) {
 
 const getAllProperties = (options, limit = 10) => {
   
-  console.log(options);
-
   // Declare constant for options parameters into array
   const queryParams = [];
 
@@ -136,7 +134,7 @@ const getAllProperties = (options, limit = 10) => {
 
   /**
    * Query Building
-   * Below code to work dynamically with the search form, instead of forcing user 
+   * Below code to work dynamically with the search form, instead of forcing user
    * to input all required field. They can just partially enter search information.
    * Check if there are input from search query, if so append WHERE and build the Query.
    */
@@ -206,7 +204,7 @@ const getAllProperties = (options, limit = 10) => {
   `;
 
   // Query Check Debug
-  console.log(propertyQuery, queryParams);
+  //console.log(propertyQuery, queryParams);
 
   // Execute the query with paramenters
 
@@ -226,10 +224,23 @@ const getAllProperties = (options, limit = 10) => {
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+
+  console.log(property);
+
+  const addPropertyQuery = `
+  INSERT INTO properties (title, description, number_of_bedrooms, number_of_bathrooms, parking_spaces, cost_per_night, thumbnail_photo_url, cover_photo_url, street, country, city, province, post_code, owner_id)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+  RETURNING *;
+  `;
+
+  return pool
+    .query(addPropertyQuery, [property.title, property.description, property.number_of_bedrooms, property.number_of_bathrooms, property.parking_spaces, property.cost_per_night, property.thumbnail_photo_url, property.cover_photo_url, property.street, property.country, property.city, property.province, property.post_code, property.owner_id])
+    .then((result) => {
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 };
 
 module.exports = {
