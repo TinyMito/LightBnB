@@ -7,6 +7,17 @@ const pool = new Pool({
   database: 'lightbnb'
 });
 
+const queryData = (query, parameters) => {
+  return pool
+    .query(query, parameters)
+    .then((result) => {
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+};
+
 /// Users
 
 /**
@@ -20,13 +31,9 @@ const getUserWithEmail = function(email) {
   FROM users
   WHERE email = $1;
   `;
-  return pool
-    .query(userQuery, [ email ])
-    .then((result) => {
-      return result.rows[0];
-    })
-    .catch((err) => {
-      console.log(err.message);
+  return queryData(userQuery, [ email ])
+    .then((rows) => {
+      return rows[0];
     });
 };
 
@@ -41,14 +48,7 @@ const getUserWithId = function(id) {
   FROM users
   WHERE id = $1;
   `;
-  return pool
-    .query(idQuery, [ id ])
-    .then((result) => {
-      return result.rows;
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
+  return queryData(idQuery, [ id ]);
 };
 
 /**
@@ -62,15 +62,8 @@ const addUser = function(user) {
   VALUES ($1, $2, $3)
   RETURNING *;
   `;
-  return pool
-    .query(addUserQuery,
-      [ user.name, user.email, user.password ])
-    .then((result) => {
-      return result.rows;
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
+  return queryData(addUserQuery, [ user.name, user.email, user.password ]);
+
 };
 
 /// Reservations
@@ -90,14 +83,7 @@ const getAllReservations = function(id, limit = 10) {
   GROUP BY reservations.id, properties.id
   LIMIT $2;
   `;
-  return pool
-    .query(reservationQuery, [ id, limit ])
-    .then((result) => {
-      return result.rows;
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
+  return queryData(reservationQuery, [ id, limit ]);
 };
 
 /// Properties
@@ -178,14 +164,7 @@ const getAllProperties = (options, limit = 10) => {
   `;
 
   // Execute the query with paramenters
-  return pool
-    .query(propertyQuery, queryParams)
-    .then((result) => {
-      return result.rows;
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
+  return queryData(propertyQuery, queryParams)
 };
 
 /**
@@ -199,14 +178,7 @@ const addProperty = function(property) {
   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
   RETURNING *;
   `;
-  return pool
-    .query(addPropertyQuery, [property.title, property.description, property.number_of_bedrooms, property.number_of_bathrooms, property.parking_spaces, property.cost_per_night, property.thumbnail_photo_url, property.cover_photo_url, property.street, property.country, property.city, property.province, property.post_code, property.owner_id])
-    .then((result) => {
-      return result.rows;
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
+  return queryData(addPropertyQuery, [property.title, property.description, property.number_of_bedrooms, property.number_of_bathrooms, property.parking_spaces, property.cost_per_night, property.thumbnail_photo_url, property.cover_photo_url, property.street, property.country, property.city, property.province, property.post_code, property.owner_id])
 };
 
 module.exports = {
