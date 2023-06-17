@@ -7,9 +7,6 @@ const pool = new Pool({
   database: 'lightbnb'
 });
 
-// the following assumes that you named your connection variable `pool`
-//pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.log(response)})
-
 /// Users
 
 /**
@@ -18,17 +15,14 @@ const pool = new Pool({
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function(email) {
-
   const userQuery = `
   SELECT *
   FROM users
   WHERE email = $1;
   `;
-
   return pool
     .query(userQuery, [ email ])
     .then((result) => {
-      console.log('getUserWithEmail', result.rows[0]);
       return result.rows[0];
     })
     .catch((err) => {
@@ -42,13 +36,11 @@ const getUserWithEmail = function(email) {
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function(id) {
-
   const idQuery = `
   SELECT *
   FROM users
   WHERE id = $1;
   `;
-
   return pool
     .query(idQuery, [ id ])
     .then((result) => {
@@ -65,22 +57,19 @@ const getUserWithId = function(id) {
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser = function(user) {
-
   const addUserQuery = `
   INSERT INTO users (name, email, password)
   VALUES ($1, $2, $3)
   RETURNING *;
   `;
-
   return pool
     .query(addUserQuery,
       [ user.name, user.email, user.password ])
     .then((result) => {
-      console.log('addUser: ', result.rows);
       return result.rows;
     })
     .catch((err) => {
-      console.log('ERROR: ', err.message);
+      console.log(err.message);
     });
 };
 
@@ -92,22 +81,23 @@ const addUser = function(user) {
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function(id, limit = 10) {
-
   const reservationQuery = `
-  SELECT *
+  SELECT reservations.*, properties.*, avg(property_reviews.rating) as average_rating
   FROM reservations
   JOIN properties ON reservations.property_id = properties.id
+  JOIN property_reviews ON reservations.id = property_reviews.reservation_id
   WHERE reservations.guest_id = $1
+  GROUP BY reservations.id, properties.id
   LIMIT $2;
   `;
-
   return pool
     .query(reservationQuery, [ id, limit ])
     .then((result) => {
+      console.log(result.rows)
       return result.rows;
     })
     .catch((err) => {
-      console.log('ERROR: ', err.message);
+      console.log(err.message);
     });
 };
 
@@ -121,9 +111,7 @@ const getAllReservations = function(id, limit = 10) {
  */
 
 const getAllProperties = (options, limit = 10) => {
-  
-  // Declare constant for options parameters into array
-  const queryParams = [];
+  const queryParams = []; // Declare constant for options parameters into array
 
   // BASE SQL Query for getAllProperties
   let propertyQuery = `
@@ -141,38 +129,28 @@ const getAllProperties = (options, limit = 10) => {
   if (Object.keys(options).length > 0) {
     propertyQuery += `WHERE `;
   }
-
   if (options.owner_id) {
     queryParams.push(`${options.owner_id}`);
     propertyQuery += `properties.owner_id = $${queryParams.length} `;
   }
-
   if (options.city) {
     queryParams.push(`%${options.city}%`);
     propertyQuery += `properties.city LIKE $${queryParams.length} `;
   }
-
   if (options.minimum_price_per_night && options.maximum_price_per_night) {
-
     queryParams.push(`${options.minimum_price_per_night * 100}`);
-
     if (options.city) {
       propertyQuery += `AND `;
     }
-
     propertyQuery += `properties.cost_per_night BETWEEN $${queryParams.length} `;
     queryParams.push(`${options.maximum_price_per_night * 100}`);
     propertyQuery += `AND $${queryParams.length} `;
-
   } else if (options.minimum_price_per_night || options.maximum_price_per_night) {
-
     if (options.minimum_price_per_night) {
       queryParams.push(`${options.minimum_price_per_night * 100}`);
-
       if (options.city) {
         propertyQuery += `AND `;
       }
-
       propertyQuery += `properties.cost_per_night >= $${queryParams.length} `;
     }
 
@@ -183,9 +161,7 @@ const getAllProperties = (options, limit = 10) => {
       }
       propertyQuery += `properties.cost_per_night <= $${queryParams.length} `;
     }
-
   }
-
   if (options.minimum_rating) {
     queryParams.push(`${options.minimum_rating}`);
     if (options.maximum_price_per_night) {
@@ -196,18 +172,13 @@ const getAllProperties = (options, limit = 10) => {
 
   // Query closure
   queryParams.push(limit);
-
   propertyQuery += `
   GROUP BY properties.id
   ORDER BY properties.cost_per_night
   LIMIT $${queryParams.length};
   `;
 
-  // Query Check Debug
-  //console.log(propertyQuery, queryParams);
-
   // Execute the query with paramenters
-
   return pool
     .query(propertyQuery, queryParams)
     .then((result) => {
@@ -224,15 +195,11 @@ const getAllProperties = (options, limit = 10) => {
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-
-  console.log(property);
-
   const addPropertyQuery = `
   INSERT INTO properties (title, description, number_of_bedrooms, number_of_bathrooms, parking_spaces, cost_per_night, thumbnail_photo_url, cover_photo_url, street, country, city, province, post_code, owner_id)
   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
   RETURNING *;
   `;
-
   return pool
     .query(addPropertyQuery, [property.title, property.description, property.number_of_bedrooms, property.number_of_bathrooms, property.parking_spaces, property.cost_per_night, property.thumbnail_photo_url, property.cover_photo_url, property.street, property.country, property.city, property.province, property.post_code, property.owner_id])
     .then((result) => {
